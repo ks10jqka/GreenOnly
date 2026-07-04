@@ -179,7 +179,7 @@
   var player=null, targetX=null;
   var keys={left:false,right:false};
   var moveSpd=0;
-  var crashHits=0, bullLabel='🔥 불장 타임';
+  var crashHits=0, bullLabel='🔥 불장 타임', downStreak=0;
   var AC=null, muted=false;
   var bgmStep=0, bullStep=0, bgmT=0, bgmTimer=null, master=null;
   var moneyEl=null, moneyNumEl=null, pulseTimer=null, colorTimer=null;
@@ -195,7 +195,7 @@
   function resetGame(){
     money=START_MONEY; displayMoney=START_MONEY; timeLeft=GAME_TIME;
     candles=[]; floatTexts=[]; spawnTimer=0;
-    combo=0; maxCombo=0; hansangCount=0; shake=0; flash=0; bullTimer=0; bullArmed=true; bullStep=0; emo=null; emoTimer=0; newsTimer=0; newsType=null; targetX=null; moveSpd=0; crashHits=0; bullLabel='🔥 불장 타임';
+    combo=0; maxCombo=0; hansangCount=0; shake=0; flash=0; bullTimer=0; bullArmed=true; bullStep=0; emo=null; emoTimer=0; newsTimer=0; newsType=null; targetX=null; moveSpd=0; crashHits=0; bullLabel='🔥 불장 타임'; downStreak=0;
     newsQueue=(function(){ var n=3+Math.floor(Math.random()*3), arr=[], st=7, en=92, sp=(en-st)/n; for(var i=0;i<n;i++) arr.push(st+i*sp+Math.random()*sp*0.7); return arr; })();
     newsBag={ boom:shuffle(BOOM_NEWS.slice()), fake:shuffle(FAKE_NEWS.slice()) };
     crashTimer=0; flashR=0; crashQueue=(function(){ var n=2+Math.floor(Math.random()*2), arr=[], st=30, en=90, sp=(en-st)/n; for(var i=0;i<n;i++) arr.push(st+i*sp+Math.random()*sp*0.6); return arr; })();
@@ -293,26 +293,33 @@
       if(overlap){
         c.dead=true;
         if(c.special==='limitup'){
-          var gu=Math.round(money*0.3); money+=gu; combo++; if(combo>maxCombo)maxCombo=combo; hansangCount++; if(combo===30 && bullArmed && bullTimer<=0){ bullArmed=false; bullMarket(); }
+          var gu=Math.round(money*0.3); money+=gu; combo++; if(combo>maxCombo)maxCombo=combo; hansangCount++; downStreak=0; if(combo===30 && bullArmed && bullTimer<=0){ bullArmed=false; bullMarket(); }
           addFloat('상한가 +'+fmtMan(gu), c.x+cw/2, player.y, '#3fb950', 14);
           pulseMoney(1, 13); showCombo(combo); setEmo('wow',0.9); sfx('limitup');
         } else if(c.special==='limitdown'){
-          var ld=Math.round(money*0.3); money-=ld; combo=0; bullArmed=true;
+          var ld=Math.round(money*0.3); money-=ld; combo=0; bullArmed=true; downStreak++;
           addFloat('하한가 -'+fmtMan(ld), c.x+cw/2, player.y, '#f85149', 14);
           pulseMoney(-1, 13); shake=22; setEmo('shock',0.9); sfx('limitdown');
           if(money<=0){ money=0; updateHUD(); endGame(); return; }
           if(crashTimer>0){ crashHits++; if(crashHits>=2) zzinban(); }   // 폭락장 중 하한가 2방 -> 찐반!!!
         } else if(c.isUp){
-          money += c.spec.value; combo++; if(combo>maxCombo)maxCombo=combo; if(combo===30 && bullArmed && bullTimer<=0){ bullArmed=false; bullMarket(); }
+          combo++; if(combo>maxCombo)maxCombo=combo; downStreak=0; if(combo===30 && bullArmed && bullTimer<=0){ bullArmed=false; bullMarket(); }
+          var gmult = Math.min(3, 1 + (combo-1)*0.12);   // 연속 양봉마다 +12%, 최대 3배
+          var gain = Math.round(c.spec.value * gmult);
+          money += gain;
           if(c.level>=9) hansangCount++;
-          addFloat('+'+fmtMan(c.spec.value), c.x+cw/2, player.y, UP_COLOR, c.level);
+          addFloat('+'+fmtMan(gain), c.x+cw/2, player.y, UP_COLOR, c.level);
           pulseMoney(1, c.level); setEmo('happy',0.35); sfx('up',combo);
           if(combo>=3) showCombo(combo);
         } else {
-          money -= c.spec.value; combo=0; bullArmed=true;
-          addFloat('-'+fmtMan(c.spec.value), c.x+cw/2, player.y, DOWN_COLOR, c.level);
+          downStreak++; combo=0; bullArmed=true;
+          var dmult = Math.min(3, 1 + (downStreak-1)*0.4);   // 연속 음봉마다 +40%, 최대 3배
+          var loss = Math.round(c.spec.value * dmult);
+          money -= loss;
+          addFloat('-'+fmtMan(loss), c.x+cw/2, player.y, DOWN_COLOR, c.level);
+          if(downStreak>=2) addFloat(downStreak+'연속', c.x+cw/2+cw*0.45, player.y-14, 'rgba(248,81,73,0.72)', 1);   // 연속 표시는 작고 은은하게
           pulseMoney(-1, c.level); setEmo('hurt',0.5); sfx('down');
-          shake=10+c.level;
+          shake=10+c.level+Math.min(14,downStreak*2);
           if(money<=0){ money=0; updateHUD(); endGame(); return; }
         }
         updateHUD();
