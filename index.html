@@ -38,7 +38,8 @@
   #newsHeadline.show { animation:nhl 2.8s ease-out; }
   @keyframes nhl { 0%{opacity:0; transform:translateY(10px);} 12%{opacity:1; transform:translateY(0);} 78%{opacity:1;} 100%{opacity:0; transform:translateY(-4px);} }
   @keyframes evt { 0%{opacity:0; transform:scale(.3);} 12%{opacity:1; transform:scale(1.35);} 22%{transform:scale(1.05);} 80%{opacity:1; transform:scale(1.05);} 100%{opacity:0; transform:scale(1.15);} }
-  .overlay { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; background:rgba(13,17,23,.92); color:#e6edf3; z-index:20; padding:24px; overflow-y:auto; }
+  .overlay { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; background:rgba(13,17,23,.92); color:#e6edf3; z-index:20; padding:24px; overflow-y:auto; scrollbar-width:none; -ms-overflow-style:none; }
+  .overlay::-webkit-scrollbar { display:none; }
   .hidden { display:none; }
   .overlay h1 { font-size:30px; font-weight:900; margin-bottom:6px; letter-spacing:-1px; }
   .overlay h1 .up { color:#3fb950; } .overlay h1 .down { color:#f85149; }
@@ -57,13 +58,13 @@
   #resultScore { font-size:40px; font-weight:900; color:#f7c948; margin:6px 0; white-space:nowrap; }
   #resultTitle { font-size:28px; font-weight:900; margin-bottom:4px; color:#ff8c42; text-shadow:0 0 16px rgba(255,140,66,.6); }
   #resultStats { font-size:18px; font-weight:700; color:#c9d1d9; margin-bottom:6px; }
-  .lb { list-style:none; width:100%; max-width:440px; margin-top:8px; text-align:left; }
+  .lb { list-style:none; width:100%; max-width:420px; margin-top:8px; text-align:left; }
   .lb li { display:flex; justify-content:space-between; padding:6px 12px; border-radius:8px; font-size:14px; }
   .lb li:nth-child(odd){ background:#161b22; }
   .lb li.me { background:#1f2d1f; color:#7ee787; }
   .lb .rank { width:26px; color:#9da7b3; }
   .lb .name { flex:1; }
-  #lbListStart { max-width:320px; margin-top:6px; }
+  #lbListStart { max-width:380px; margin-top:6px; }
   #lbListStart li { font-size:13px; padding:5px 12px; }
   #lbTitle { font-size:13px; font-weight:700; color:#9da7b3; margin-top:30px; }
   .lbTabs { display:flex; gap:10px; justify-content:center; margin:8px 0 4px; }
@@ -74,7 +75,6 @@
   #introHero { width:100%; max-width:520px; height:55vh; object-fit:cover; object-position:center top; display:block;
     -webkit-mask-image:linear-gradient(to bottom,#000 86%,transparent 100%); mask-image:linear-gradient(to bottom,#000 86%,transparent 100%); }
   #startScreen h1, #startScreen .rule { display:none; }
-  #lbListStart { max-height:20vh; overflow-y:auto; }
 </style>
 </head>
 <body>
@@ -183,8 +183,10 @@
   var nameInput=null, playerName='', eventEl=null;
   var newsHeadlineEl=null;
   var resultMe=null;
-  var BOOM_NEWS=['📈 삼승전자 어닝 서프라이즈일랑가?', '⭐ 일론 머쓱, X에 의문의 별3개 사진 게시?!', '🚗 헐대차 BMV 헐값 인수 추진! 과연?', '📦 쿠빵, 로켓배송으로 주식도 배달한다고?', '💊 삼송바이오, 불로장생 신약 임상 승인', '🍽️ 잭슨황, 상장사 대표 500명이랑 밥 먹는다!!', '💰 국민연금 국장에 올인! 영끌 빚끌 올인!', '🏛️ 여야 힘모아 주식앱 매도 버튼 삭제법 추진!?'];
+  var BOOM_NEWS=['📈 삼승전자 어닝 서프라이즈일랑가?', '⭐ 일론 머쓱, X에 의문의 별3개 사진 게시?!', '🚗 헐대차 BMV 헐값 인수 추진! 과연?', '📦 쿠빵, 로켓배송으로 주식도 배달한다고?', '💊 삼송바이오, 불로장생 신약 임상 승인', '🍽️ 잭슨황, 상장사 대표 500명이랑 밥 먹는다!!', '💰 국민연금 국장에 올인! 영끌 빚끌 올인!'];
   var FAKE_NEWS=['💥 외국인 매도 폭탄, 걱정마 빚투가 나가신다?', '😱 까까오 상장폐지 찌라시에 개미들 오열', '💻 항국은행 해킹 충격…\'개미들 패닉\'', '🥊 트럼푸 성추문 X파일, 세계가 경악!', '⚛️ 차세대 초전도 양자컴터 등장. 축복일까? 재앙일까?', '🚨 [속보] 계엄령 발동!', '🍗 잭슨황 "한국 치킨 사실 별로다" 발언 파장'];
+  var newsBag={boom:[],fake:[]};
+  function shuffle(a){ for(var k=a.length-1;k>0;k--){ var j=Math.floor(Math.random()*(k+1)); var t=a[k]; a[k]=a[j]; a[j]=t; } return a; }
   var NAME_KEY='ybmb_name';
 
   function resetGame(){
@@ -192,6 +194,7 @@
     candles=[]; floatTexts=[]; spawnTimer=0;
     combo=0; maxCombo=0; hansangCount=0; shake=0; flash=0; bullTimer=0; bullArmed=true; bullStep=0; emo=null; emoTimer=0; newsTimer=0; newsType=null; targetX=null; moveSpd=0;
     newsQueue=(function(){ var n=3+Math.floor(Math.random()*3), arr=[], st=7, en=84, sp=(en-st)/n; for(var i=0;i<n;i++) arr.push(st+i*sp+Math.random()*sp*0.7); return arr; })();
+    newsBag={ boom:shuffle(BOOM_NEWS.slice()), fake:shuffle(FAKE_NEWS.slice()) };
     crashTimer=0; flashR=0; crashQueue=[38+Math.random()*12, 62+Math.random()*14];
     player={ w:Math.max(44,W*0.12), h:0, x:0, y:0 };
     player.h=player.w*1.5;
@@ -244,6 +247,10 @@
     if(special){ uw=10; lw=10; bh=124; if(special==='limitup'){ spec.width=32; } else { var LDW=[38,52,66,82,100]; spec.width=LDW[Math.floor(Math.random()*5)]; } }
     var totalH = uw + bh + lw;
     var x = Math.random()*(W - spec.width - 8) + 4;
+    if(player && !isUp && (crashTimer>0 || (newsTimer>0 && newsType==='fake')) && Math.random()<0.4){
+      var pc=player.x+player.w/2, tx=pc - spec.width/2 + (Math.random()-0.5)*player.w*2.4;
+      x=Math.max(4, Math.min(W-spec.width-4, tx));   // 캠핑 방지: 가끔 조준(단 이동으로 회피 가능)
+    }
     var speed = (235 + p*190) * (0.85 + Math.random()*0.4) * (1 + level*0.012);
     if(special==='limitup') speed *= 0.8;
     candles.push({ x:x, y:-totalH-10, level:level, isUp:isUp, special:special, spec:spec, uw:uw, lw:lw, bh:bh, totalH:totalH, speed:speed, dead:false });
@@ -673,8 +680,9 @@
     for(var ni=0;ni<cnt;ni++) spawnSpecialAt(st, -20 - ni*320, true);
     showEvent(newsType==='boom' ? '🚀 떡상 뉴스!' : '💣 떡락 뉴스!', newsType==='boom' ? '#3fb950' : '#f85149', '40px');
     setEmo(newsType==='boom'?'wow':'shock', 1.0);
-    var pool = newsType==='boom' ? BOOM_NEWS : FAKE_NEWS;
-    showHeadline(pool[Math.floor(Math.random()*pool.length)], newsType==='boom' ? '#7ee787' : '#ff7b72');
+    var bag = newsBag[newsType];
+    if(!bag || bag.length===0){ bag = newsBag[newsType] = shuffle((newsType==='boom'?BOOM_NEWS:FAKE_NEWS).slice()); }
+    showHeadline(bag.pop(), newsType==='boom' ? '#7ee787' : '#ff7b72');
   }
   function showHeadline(txt,color){
     if(!newsHeadlineEl) return;
@@ -737,6 +745,27 @@
   }
 
   function esc(t){ return String(t).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c];}); }
+  // 실제 기록이 10개가 안 될 때 채워넣을 재치있는 가짜 유저
+  var FAKE_NAMES=['존버는승리','한강뷰예약자','불개미양성소','매수의신','물타기장인','영끌풀매수','따상가즈아','계좌인공호흡','우량주무새','손절엔소질무','반포자이꿈나무','시드머니사수','떡상기원1일차','곰탈출개미','국장탈출각','존버9년차','마통까지영끌','치킨값버는중','상한가맛집','내일부터부자'];
+  var FAKE_LB=(function(){
+    var pool=FAKE_NAMES.slice(); for(var k=pool.length-1;k>0;k--){ var j=Math.floor(Math.random()*(k+1)); var t=pool[k]; pool[k]=pool[j]; pool[j]=t; }
+    var TOP=1.4e10, BOT=1.5e7, N=pool.length, arr=[];   // 140억 ~ 1500만 로그 분포(등급 전반)
+    for(var i=0;i<N;i++){
+      var f=i/(N-1);
+      var sc=TOP*Math.pow(BOT/TOP, f)*(0.85+Math.random()*0.3);
+      sc=Math.round(sc/1000000)*1000000;
+      var cb=8+Math.round((1-f)*50)+Math.floor(Math.random()*8);   // 점수 높을수록 콤보↑
+      arr.push({ name:pool[i], score:sc, combo:cb, fake:true });
+    }
+    arr.sort(function(a,b){ return b.score-a.score; });   // 높은순
+    return arr;
+  })();
+  function padFake(arr, limit, mode){
+    var out=arr.slice(), need=limit-out.length;
+    if(need>0){ for(var n=0;n<need;n++){ var idx=(need<=1)?Math.floor(FAKE_LB.length/2):Math.round(n*(FAKE_LB.length-1)/(need-1)); out.push(FAKE_LB[idx]); } }
+    out.sort(function(a,b){ return mode==='combo' ? ((b.combo||0)-(a.combo||0)) : ((b.score||0)-(a.score||0)); });
+    return out.slice(0,limit);
+  }
   // ===== Supabase 공유 리더보드 설정 =====
   // 아래 두 값을 채우면 전세계 공유 랭킹으로 동작합니다. 비워두면 이 기기 로컬 저장으로 동작.
   //  설정법: supabase.com 프로젝트 생성 → 아래 SQL로 scores 테이블 생성 →
@@ -764,9 +793,9 @@
   function renderRows(list, me, ulId, limit, mode){
     mode = mode || 'score';
     var ul=document.getElementById(ulId||'lbList'); if(!ul) return; ul.innerHTML=''; limit=limit||10;
-    if(!list || list.length===0){ ul.innerHTML='<li><span class="name" style="color:#9da7b3">아직 기록이 없어요</span></li>'; return; }
-    var arr=list.slice();
+    var arr=(list||[]).slice();
     arr.sort(function(a,b){ return mode==='combo' ? ((b.combo||0)-(a.combo||0)) : ((b.score||0)-(a.score||0)); });
+    arr=padFake(arr, limit, mode);   // 항상 limit개까지 가짜로 채움
     var shownMe=false;
     for(var i=0;i<Math.min(limit,arr.length);i++){
       var x=arr[i], li=document.createElement('li');
