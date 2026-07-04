@@ -54,7 +54,7 @@
   .swatch { display:inline-block; width:14px; height:22px; border-radius:2px; vertical-align:middle; margin-right:5px; }
   .up-sw { background:#3fb950; } .down-sw { background:#f85149; }
   #resultHead { font-size:22px; }
-  #resultScore { font-size:40px; font-weight:900; color:#f7c948; margin:6px 0; }
+  #resultScore { font-size:40px; font-weight:900; color:#f7c948; margin:6px 0; white-space:nowrap; }
   #resultTitle { font-size:28px; font-weight:900; margin-bottom:4px; color:#ff8c42; text-shadow:0 0 16px rgba(255,140,66,.6); }
   #resultStats { font-size:18px; font-weight:700; color:#c9d1d9; margin-bottom:6px; }
   .lb { list-style:none; width:100%; max-width:440px; margin-top:8px; text-align:left; }
@@ -183,8 +183,8 @@
   var nameInput=null, playerName='', eventEl=null;
   var newsHeadlineEl=null;
   var resultMe=null;
-  var BOOM_NEWS=['삼승전자 분기 실적 1,000% 폭증?','일론 머쓱, X에 의문의 별3개 사진 게시...','헐대차 BMV 인수! 과연 사실일까?','쿠빵, 로켓배송으로 주식도 배달한다고?','삼송바이오, 불로장생 신약 임상 승인?'];
-  var FAKE_NEWS=['까까오 상장폐지 찌라시에 개미들 오열','코리아은행 해킹 충격…\'개미들 패닉\'','트럼푸, 시진펑에 맞짱 제안... 노망인가?','차세대 양자컴터 등장. 재앙의 서막?','계엄령 발동!'];
+  var BOOM_NEWS=['📈 삼승전자 어닝 서프라이즈일랑가?', '⭐ 일론 머쓱, X에 의문의 별3개 사진 게시?!', '🚗 헐대차 BMV 헐값 인수 추진! 과연?', '📦 쿠빵, 로켓배송으로 주식도 배달한다고?', '💊 삼송바이오, 불로장생 신약 임상 승인', '🍽️ 잭슨황, 상장사 대표 500명이랑 밥 먹는다!!', '💰 국민연금 국장에 올인! 영끌 빚끌 올인!', '🏛️ 여야 힘모아 주식앱 매도 버튼 삭제법 추진!?'];
+  var FAKE_NEWS=['💥 외국인 매도 폭탄, 걱정마 빚투가 나가신다?', '😱 까까오 상장폐지 찌라시에 개미들 오열', '💻 항국은행 해킹 충격…\'개미들 패닉\'', '🥊 트럼푸 성추문 X파일, 세계가 경악!', '⚛️ 차세대 초전도 양자컴터 등장. 축복일까? 재앙일까?', '🚨 [속보] 계엄령 발동!', '🍗 잭슨황 "한국 치킨 사실 별로다" 발언 파장'];
   var NAME_KEY='ybmb_name';
 
   function resetGame(){
@@ -254,7 +254,7 @@
 
     var dir = (keys.right?1:0) - (keys.left?1:0);
     if(dir!==0){
-      moveSpd = Math.min(W*1.7, (moveSpd>0?moveSpd:W*0.55) + W*1.7*dt);
+      moveSpd = Math.min(W*2.4, (moveSpd>0?moveSpd:W*0.6) + W*2.8*dt);
       player.x += dir*moveSpd*dt;
     } else { moveSpd = 0; }
     player.x = Math.max(0, Math.min(W-player.w, player.x));
@@ -907,7 +907,9 @@
     } else {
       showLB('lbList','score',resultMe);
     }
-    document.getElementById('resultScreen').classList.remove('hidden');
+    var rs=document.getElementById('resultScreen'); rs.classList.remove('hidden');
+    var se=document.getElementById('resultScore'); se.style.fontSize='40px';
+    requestAnimationFrame(function(){ var fs=40; while(se.scrollWidth>se.clientWidth && fs>18){ fs-=1; se.style.fontSize=fs+'px'; } });
   }
 
   moneyEl=document.getElementById('money');
@@ -946,3 +948,4 @@
 </script>
 </body>
 </html>
+ 
