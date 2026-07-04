@@ -4,6 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>불장을 기다리며</title>
+<meta name="description" content="양봉은 먹고 음봉은 피해라! 90초 주식 서바이벌 아케이드 게임.">
+<!-- Open Graph (링크 미리보기) -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="불장을 기다리며">
+<meta property="og:description" content="양봉은 먹고 음봉은 피해라! 90초 주식 서바이벌 아케이드 게임.">
+<meta property="og:image" content="https://ks10jqka.github.io/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://ks10jqka.github.io/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="불장을 기다리며">
+<meta name="twitter:description" content="양봉은 먹고 음봉은 피해라! 90초 주식 서바이벌 아케이드 게임.">
+<meta name="twitter:image" content="https://ks10jqka.github.io/og.jpg">
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   html,body { height:100%; background:#1b2431; overflow:hidden; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Malgun Gothic",sans-serif; }
@@ -178,7 +191,7 @@
     money=START_MONEY; displayMoney=START_MONEY; timeLeft=GAME_TIME;
     candles=[]; floatTexts=[]; spawnTimer=0;
     combo=0; maxCombo=0; hansangCount=0; shake=0; flash=0; bullTimer=0; bullArmed=true; bullStep=0; emo=null; emoTimer=0; newsTimer=0; newsType=null; targetX=null; moveSpd=0;
-    newsQueue=[8+Math.random()*12, 34+Math.random()*12, 60+Math.random()*14];
+    newsQueue=(function(){ var n=3+Math.floor(Math.random()*3), arr=[], st=7, en=84, sp=(en-st)/n; for(var i=0;i<n;i++) arr.push(st+i*sp+Math.random()*sp*0.7); return arr; })();
     crashTimer=0; flashR=0; crashQueue=[38+Math.random()*12, 62+Math.random()*14];
     player={ w:Math.max(44,W*0.12), h:0, x:0, y:0 };
     player.h=player.w*1.5;
@@ -779,7 +792,7 @@
       .catch(function(){ renderRows(loadLB(), me, ulId, limit, mode); });
   }
 
-  function initAudio(){ try{ if(!AC){ AC=new (window.AudioContext||window.webkitAudioContext)(); master=AC.createGain(); master.gain.value=0.85; var lp=AC.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=3000; lp.Q.value=0.4; master.connect(lp); lp.connect(AC.destination); } if(AC.state==='suspended') AC.resume(); }catch(e){} }
+  function initAudio(){ try{ if(!AC){ AC=new (window.AudioContext||window.webkitAudioContext)(); master=AC.createGain(); master.gain.value=0.95; var lp=AC.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=3000; lp.Q.value=0.4; master.connect(lp); lp.connect(AC.destination); } if(AC.state==='suspended') AC.resume(); }catch(e){} }
   function tone(freq,dur,type,vol,off,slide){
     if(!AC||muted) return;
     var t0=AC.currentTime+(off||0);
@@ -794,7 +807,16 @@
   }
   function sfx(kind,combo){
     if(!AC||muted) return;
-    if(kind==='up'){ var b=440+Math.min(24,combo||0)*16; tone(b,0.09,'square',0.16,0,b*1.5); }
+    if(kind==='up'){
+      var SC=[523,587,659,784,880,1047,1175,1319,1568,1760,2093];
+      var i=Math.max(0,Math.min((combo||1)-1, SC.length-1)); var f=SC[i];
+      tone(f,0.13,'triangle',0.26);            // 메인(크게)
+      tone(f,0.11,'square',0.11,0.002);         // 사각파 레이어(두께)
+      tone(f*0.5,0.15,'sine',0.12);             // 한 옥타브 아래 저음 바디
+      tone(f*1.5,0.10,'sine',0.07,0.005);       // 5도 하모니
+      tone(f*2,0.07,'triangle',0.05,0.012);     // 옥타브 반짝임
+      if(combo && combo%10===0){ [f,f*1.25,f*1.5,f*2].forEach(function(x,k){ tone(x,0.14,'square',0.12,0.05+k*0.05); }); }  // 10콤보 팡파레
+    }
     else if(kind==='down'){ tone(190,0.18,'sawtooth',0.16,0,90); }
     else if(kind==='limitup'){ [523,659,784,1047].forEach(function(f,i){ tone(f,0.12,'square',0.18,i*0.06); }); }
     else if(kind==='limitdown'){ [420,320,220,130].forEach(function(f,i){ tone(f,0.14,'sawtooth',0.18,i*0.05); }); }
@@ -827,7 +849,7 @@
     if(!AC) return;
     var o=AC.createOscillator(), g=AC.createGain();
     o.type='sine'; o.frequency.setValueAtTime(150,when); o.frequency.exponentialRampToValueAtTime(52,when+0.09);
-    g.gain.setValueAtTime(0.11,when); g.gain.exponentialRampToValueAtTime(0.0001,when+0.13);
+    g.gain.setValueAtTime(0.16,when); g.gain.exponentialRampToValueAtTime(0.0001,when+0.13);
     o.connect(g); g.connect(master||AC.destination); o.start(when); o.stop(when+0.15);
   }
   function bgmTick(){
@@ -839,20 +861,20 @@
       if(bull){
         // ── 불장: 경쾌한 무적 BGM ──
         var blf=BULL_LEAD[bullStep % BULL_LEAD.length];
-        if(blf){ bgmNote(blf, bgmT, 0.10, 'square', 0.05); bgmNote(blf*2, bgmT, 0.06, 'triangle', 0.02); }
+        if(blf){ bgmNote(blf, bgmT, 0.10, 'square', 0.09); bgmNote(blf*2, bgmT, 0.06, 'triangle', 0.035); }
         var bbf=BULL_BASS[bullStep % BULL_BASS.length];
-        if(bbf) bgmNote(bbf, bgmT, 0.10, 'sine', 0.07);
+        if(bbf) bgmNote(bbf, bgmT, 0.10, 'sine', 0.12);
         if(bullStep % 2 === 0) bgmKick(bgmT);
-        else bgmNote(1600, bgmT, 0.02, 'triangle', 0.012);
+        else bgmNote(1600, bgmT, 0.02, 'triangle', 0.022);
         bgmT += 0.11; bullStep++;
       } else {
         var STEP=0.135;
         var lf=LEAD[bgmStep % LEAD.length];
-        if(lf) bgmNote(lf, bgmT, 0.16, 'triangle', 0.05);
+        if(lf) bgmNote(lf, bgmT, 0.16, 'triangle', 0.10);
         var bf=BASS[((bgmStep/4)|0) % BASS.length];
-        if(bgmStep % 4 === 0){ if(bf){ bgmNote(bf, bgmT, 0.34, 'sine', 0.08); bgmNote(bf*1.5, bgmT, 0.3, 'triangle', 0.03); bgmKick(bgmT); } }
-        else if(bgmStep % 2 === 0){ if(bf) bgmNote(bf, bgmT, 0.12, 'sine', 0.05); }
-        if(bgmStep % 2 === 1) bgmNote(1400, bgmT, 0.025, 'triangle', 0.012);
+        if(bgmStep % 4 === 0){ if(bf){ bgmNote(bf, bgmT, 0.34, 'sine', 0.14); bgmNote(bf*1.5, bgmT, 0.3, 'triangle', 0.05); bgmKick(bgmT); } }
+        else if(bgmStep % 2 === 0){ if(bf) bgmNote(bf, bgmT, 0.12, 'sine', 0.09); }
+        if(bgmStep % 2 === 1) bgmNote(1400, bgmT, 0.025, 'triangle', 0.022);
         bgmT += STEP; bgmStep++;
       }
     }
