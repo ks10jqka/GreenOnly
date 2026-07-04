@@ -80,7 +80,7 @@
 <body>
 <div id="wrap">
   <canvas id="game"></canvas>
-  <div id="timeLabel">90.0s</div>
+  <div id="timeLabel">100.0s</div>
   <div id="timebar-bg"><div id="timebar"></div></div>
   <div id="money"><span id="moneyNum">30,000,000</span><span class="won">원</span></div>
   <div id="title-badge">개미</div>
@@ -98,7 +98,7 @@
     </div>
     <input id="nameInput" type="text" maxlength="10" placeholder="닉네임 입력" autocomplete="off">
     <p style="font-size:13px;margin:6px 0 4px">조작방법 : 방향키 or 마우스 드래그</p>
-    <button class="btn" id="startBtn">게임 시작</button>
+    <button class="btn" id="startBtn">가즈아!!</button>
     <div style="font-size:13px;font-weight:800;color:#f7c948;margin-top:16px;">🏆 TOP PLAYERS</div>
     <div class="lbTabs" data-target="lbListStart">
       <button class="lbTab active" data-mode="score">💰 점수</button>
@@ -118,7 +118,7 @@
       <button class="lbTab" data-mode="combo">🔥 콤보</button>
     </div>
     <ol id="lbList" class="lb"></ol>
-    <button class="btn" id="retryBtn">다시하기</button>
+    <button class="btn" id="retryBtn">다시 가즈아!!</button>
   </div>
 </div>
 <script>
@@ -138,7 +138,7 @@
   }
 
   var START_MONEY = 30000000;
-  var GAME_TIME = 90;
+  var GAME_TIME = 100;
   var UP_COLOR='#3fb950', UP_COLOR_D='#2ea043';
   var DOWN_COLOR='#f85149', DOWN_COLOR_D='#c1352e';
 
@@ -177,14 +177,15 @@
   var player=null, targetX=null;
   var keys={left:false,right:false};
   var moveSpd=0;
+  var crashHits=0, bullLabel='🔥 불장 타임';
   var AC=null, muted=false;
   var bgmStep=0, bullStep=0, bgmT=0, bgmTimer=null, master=null;
   var moneyEl=null, moneyNumEl=null, pulseTimer=null, colorTimer=null;
   var nameInput=null, playerName='', eventEl=null;
   var newsHeadlineEl=null;
   var resultMe=null;
-  var BOOM_NEWS=['📈 삼승전자 어닝 서프라이즈일랑가?', '⭐ 일론 머쓱, X에 의문의 별3개 사진 게시?!', '🚗 헐대차 BMV 헐값 인수 추진! 과연?', '📦 쿠빵, 로켓배송으로 주식도 배달한다고?', '💊 삼송바이오, 불로장생 신약 임상 승인', '🍽️ 잭슨황, 상장사 대표 500명이랑 밥 먹는다!!', '💰 국민연금 국장에 올인! 영끌 빚끌 올인!'];
-  var FAKE_NEWS=['💥 외국인 매도 폭탄, 걱정마 빚투가 나가신다?', '😱 까까오 상장폐지 찌라시에 개미들 오열', '💻 항국은행 해킹 충격…\'개미들 패닉\'', '🥊 트럼푸 성추문 X파일, 세계가 경악!', '⚛️ 차세대 초전도 양자컴터 등장. 축복일까? 재앙일까?', '🚨 [속보] 계엄령 발동!', '🍗 잭슨황 "한국 치킨 사실 별로다" 발언 파장'];
+  var BOOM_NEWS=['📈 삼승전자 어닝 서프라이즈일랑가?', '⭐ 일론 머쓱, X에 의문의 별3개 사진 게시?!', '🚗 헐대차 BMV 헐값 인수 추진! 과연?', '📦 쿠빵, 로켓배송으로 주식도 배달한다고?', '💊 삼송바이오, 불로장생 신약 임상 승인', '🍽️ 잭슨황, 상장사 대표 500명이랑 밥 먹는다!!', '🎰 국민연금 국장에 몰빵간다?'];
+  var FAKE_NEWS=['💥 외국인 매도 폭탄, 걱정마 빚투가 나가신다?', '😱 까까오 상장폐지 찌라시에 개미들 오열', '💻 항국은행 해킹 충격…\'개미들 패닉\'', '🕵️ 트럼푸 성추문 X파일 파장, 세계가 경악!', '🤧 연준 의장, 회의중 재채기 3회. 과연 진의는?', '🚨 [속보] 계엄령 발동!', '🍗 잭슨황 "한국 치킨 사실 별로다" 발언 파장'];
   var newsBag={boom:[],fake:[]};
   function shuffle(a){ for(var k=a.length-1;k>0;k--){ var j=Math.floor(Math.random()*(k+1)); var t=a[k]; a[k]=a[j]; a[j]=t; } return a; }
   var NAME_KEY='ybmb_name';
@@ -192,10 +193,10 @@
   function resetGame(){
     money=START_MONEY; displayMoney=START_MONEY; timeLeft=GAME_TIME;
     candles=[]; floatTexts=[]; spawnTimer=0;
-    combo=0; maxCombo=0; hansangCount=0; shake=0; flash=0; bullTimer=0; bullArmed=true; bullStep=0; emo=null; emoTimer=0; newsTimer=0; newsType=null; targetX=null; moveSpd=0;
-    newsQueue=(function(){ var n=3+Math.floor(Math.random()*3), arr=[], st=7, en=84, sp=(en-st)/n; for(var i=0;i<n;i++) arr.push(st+i*sp+Math.random()*sp*0.7); return arr; })();
+    combo=0; maxCombo=0; hansangCount=0; shake=0; flash=0; bullTimer=0; bullArmed=true; bullStep=0; emo=null; emoTimer=0; newsTimer=0; newsType=null; targetX=null; moveSpd=0; crashHits=0; bullLabel='🔥 불장 타임';
+    newsQueue=(function(){ var n=3+Math.floor(Math.random()*3), arr=[], st=7, en=92, sp=(en-st)/n; for(var i=0;i<n;i++) arr.push(st+i*sp+Math.random()*sp*0.7); return arr; })();
     newsBag={ boom:shuffle(BOOM_NEWS.slice()), fake:shuffle(FAKE_NEWS.slice()) };
-    crashTimer=0; flashR=0; crashQueue=[38+Math.random()*12, 62+Math.random()*14];
+    crashTimer=0; flashR=0; crashQueue=(function(){ var n=2+Math.floor(Math.random()*2), arr=[], st=30, en=90, sp=(en-st)/n; for(var i=0;i<n;i++) arr.push(st+i*sp+Math.random()*sp*0.6); return arr; })();
     player={ w:Math.max(44,W*0.12), h:0, x:0, y:0 };
     player.h=player.w*1.5;
     player.x=W/2-player.w/2;
@@ -230,14 +231,14 @@
   function spawnCandle(){
     var p = difficulty();
     // 뉴스 효과: 떡상=양봉 확률 급상승 / 떡락=음봉 확률 급상승
-    var isUp = (newsTimer>0) ? (Math.random() < (newsType==='boom' ? 0.9 : 0.1)) : (Math.random() < (0.62 - p*0.18));
+    var isUp = (newsTimer>0) ? (Math.random() < (newsType==='boom' ? 0.9 : 0.1)) : (Math.random() < (0.53 - p*0.15));
     if(crashTimer>0) isUp=false;   // 폭락장: 음봉만
     var level = 1 + Math.floor(Math.pow(Math.random(), 1.12 - p*0.5)*10);
     level = Math.max(1, Math.min(10, level));
     if(!isUp && ((difficulty()>0.5 && Math.random()<0.16) || (crashTimer>0 && Math.random()<0.55))){ level = (Math.random()<0.5)?12:11; }
     var special = null;
-    if(crashTimer>0){ if(Math.random()<0.22) special='limitdown'; }
-    else if(p>0.08 && Math.random() < 0.075){ special = (Math.random()<0.42) ? 'limitup' : 'limitdown'; }
+    if(crashTimer>0){ if(Math.random()<0.30) special='limitdown'; }
+    else if(p>0.02 && Math.random() < 0.085){ special = (Math.random() < (0.42 - p*0.18)) ? 'limitup' : 'limitdown'; }
     if(special){ isUp = (special==='limitup'); level = 10; }
     if(bullTimer>0){ if(special!=='limitup') special=null; isUp=true; }   // 불장: 양봉만
     var spec = candleSpec(level, isUp);
@@ -267,8 +268,8 @@
     player.x = Math.max(0, Math.min(W-player.w, player.x));
 
     spawnTimer -= dt;
-    var interval = Math.max(0.22, 0.4 - difficulty()*0.18);
-    if(spawnTimer<=0){ spawnCandle(); if(Math.random() < 0.4 + difficulty()*0.3) spawnCandle(); spawnTimer = interval; }
+    var interval = Math.max(0.22, 0.36 - difficulty()*0.16);
+    if(spawnTimer<=0){ spawnCandle(); if(Math.random() < 0.52 + difficulty()*0.28) spawnCandle(); spawnTimer = interval; }
 
     var pTop=player.y+player.h*0.12, pB=player.y+player.h, pL=player.x+player.w*0.26, pR=player.x+player.w*0.74;
     for(var i=0;i<candles.length;i++){
@@ -298,6 +299,7 @@
           addFloat('하한가 -'+fmtMan(ld), c.x+cw/2, player.y, '#f85149', 14);
           pulseMoney(-1, 13); shake=22; setEmo('shock',0.9); sfx('limitdown');
           if(money<=0){ money=0; updateHUD(); endGame(); return; }
+          if(crashTimer>0){ crashHits++; if(crashHits>=2) zzinban(); }   // 폭락장 중 하한가 2방 -> 찐반!!!
         } else if(c.isUp){
           money += c.spec.value; combo++; if(combo>maxCombo)maxCombo=combo; if(combo===20 && bullArmed){ bullArmed=false; bullMarket(); }
           if(c.level>=9) hansangCount++;
@@ -444,10 +446,12 @@
     ctx.restore();
 
     // ===== 표정 =====
-    var expr = bullTimer>0 ? 'bull' : (emo || (good?'good':'bad'));
+    var zzin = (bullTimer>0 && bullLabel==='💥 찐반!!!');
+    var expr = zzin ? 'crazy' : (bullTimer>0 ? 'bull' : (emo || (good?'good':'bad')));
     var ey=h*0.16, eoff=w*0.065, wide=(expr==='wow'||expr==='shock'||expr==='bull');
     ctx.strokeStyle='#a87f2c'; ctx.lineWidth=Math.max(1.4,w*0.02); ctx.lineCap='round'; ctx.beginPath();
     if(expr==='hurt'){ ctx.moveTo(cx-w*0.12,h*0.122); ctx.lineTo(cx-w*0.03,h*0.15); ctx.moveTo(cx+w*0.12,h*0.122); ctx.lineTo(cx+w*0.03,h*0.15); }
+    else if(expr==='crazy'){ ctx.moveTo(cx-w*0.14,h*0.095); ctx.lineTo(cx-w*0.03,h*0.14); ctx.moveTo(cx+w*0.14,h*0.095); ctx.lineTo(cx+w*0.03,h*0.14); }
     else if(wide){ ctx.moveTo(cx-w*0.12,h*0.113); ctx.lineTo(cx-w*0.03,h*0.108); ctx.moveTo(cx+w*0.12,h*0.113); ctx.lineTo(cx+w*0.03,h*0.108); }
     else { ctx.moveTo(cx-w*0.115,h*0.135); ctx.lineTo(cx-w*0.03,h*0.128); ctx.moveTo(cx+w*0.115,h*0.135); ctx.lineTo(cx+w*0.03,h*0.128); }
     ctx.stroke();
@@ -460,6 +464,25 @@
       ctx.moveTo(cx-eoff-rr2,ey-rr2*0.7); ctx.lineTo(cx-eoff,ey); ctx.lineTo(cx-eoff-rr2,ey+rr2*0.7);
       ctx.moveTo(cx+eoff+rr2,ey-rr2*0.7); ctx.lineTo(cx+eoff,ey); ctx.lineTo(cx+eoff+rr2,ey+rr2*0.7);
       ctx.stroke();
+    } else if(expr==='crazy'){
+      for(var ci=0;ci<2;ci++){ var ex=cx+(ci===0?-eoff:eoff);
+        ctx.save(); ctx.shadowColor='rgba(230,40,30,0.95)'; ctx.shadowBlur=12;
+        ctx.fillStyle='#fff'; ctx.beginPath(); ctx.ellipse(ex,ey,w*0.062,w*0.072,0,0,7); ctx.fill(); ctx.restore();
+        ctx.strokeStyle='rgba(220,45,35,0.75)'; ctx.lineWidth=1;
+        for(var v=0;v<5;v++){ var an=v/5*6.283; ctx.beginPath(); ctx.moveTo(ex,ey); ctx.lineTo(ex+Math.cos(an)*w*0.052, ey+Math.sin(an)*w*0.06); ctx.stroke(); }
+        ctx.fillStyle='#000'; ctx.beginPath(); ctx.arc(ex+(Math.random()-0.5)*w*0.012, ey+(Math.random()-0.5)*w*0.012, w*0.012, 0,7); ctx.fill();
+      }
+      // 눈에서 레이저 발사
+      ctx.save(); ctx.globalCompositeOperation='lighter'; ctx.lineCap='round';
+      var fl=0.7+0.3*Math.sin(Date.now()/40);
+      for(var li=0;li<2;li++){ var lx=cx+(li===0?-eoff:eoff), dir=(li===0?-1:1);
+        var ex2=lx+dir*w*0.95, ey2=ey+h*1.2;
+        ctx.strokeStyle='rgba(45,220,80,'+(0.30*fl)+')'; ctx.lineWidth=w*0.06; ctx.beginPath(); ctx.moveTo(lx,ey); ctx.lineTo(ex2,ey2); ctx.stroke();
+        ctx.strokeStyle='rgba(120,255,150,'+(0.6*fl)+')'; ctx.lineWidth=w*0.03; ctx.beginPath(); ctx.moveTo(lx,ey); ctx.lineTo(ex2,ey2); ctx.stroke();
+        ctx.strokeStyle='rgba(235,255,240,'+(0.95*fl)+')'; ctx.lineWidth=w*0.012; ctx.beginPath(); ctx.moveTo(lx,ey); ctx.lineTo(ex2,ey2); ctx.stroke();
+        ctx.fillStyle='rgba(210,255,220,'+fl+')'; ctx.beginPath(); ctx.arc(lx,ey,w*0.028*fl,0,7); ctx.fill();
+      }
+      ctx.restore();
     } else {
       var erx=wide?w*0.056:w*0.045, ery=wide?w*0.066:w*0.055, irr=wide?w*0.03:w*0.028, prr=(expr==='shock')?w*0.01:(wide?w*0.016:w*0.014);
       for(var si=0;si<2;si++){ var ex=cx+(si===0?-eoff:eoff);
@@ -473,6 +496,7 @@
     ctx.beginPath(); ctx.moveTo(cx,h*0.17); ctx.lineTo(cx-w*0.02,h*0.195); ctx.lineTo(cx+w*0.012,h*0.20); ctx.stroke();
     ctx.strokeStyle='#8a4b2a'; ctx.lineWidth=Math.max(1.6,w*0.022); ctx.lineCap='round';
     if(expr==='bull'||expr==='wow'){ ctx.fillStyle='#7a3b28'; ctx.beginPath(); ctx.ellipse(cx,h*0.232,w*0.055,h*0.03,0,0,Math.PI); ctx.fill(); }
+    else if(expr==='crazy'){ ctx.fillStyle='#7a1f16'; ctx.beginPath(); ctx.ellipse(cx,h*0.238,w*0.075,h*0.038,0,0,Math.PI); ctx.fill(); ctx.fillStyle='#fff'; for(var tk=0;tk<5;tk++){ ctx.fillRect(cx-w*0.062+tk*0.026*w, h*0.232, w*0.017, h*0.013); } }
     else if(expr==='shock'){ ctx.fillStyle='#6b2f22'; ctx.beginPath(); ctx.ellipse(cx,h*0.246,w*0.034,h*0.028,0,0,7); ctx.fill(); }
     else if(expr==='hurt'||expr==='bad'){ ctx.beginPath(); ctx.arc(cx,h*0.26,w*0.05,1.15*Math.PI,1.85*Math.PI); ctx.stroke(); }
     else { ctx.beginPath(); ctx.arc(cx,h*0.222,w*0.05,0.15*Math.PI,0.85*Math.PI); ctx.stroke(); }
@@ -481,6 +505,11 @@
       ctx.strokeStyle='#ffe14d'; ctx.lineWidth=Math.max(1.5,w*0.016); ctx.lineCap='round';
       var sk=[[cx-w*0.21,h*0.08,w*0.03],[cx+w*0.21,h*0.07,w*0.024]];
       for(var q=0;q<2;q++){ var a=sk[q]; ctx.beginPath(); ctx.moveTo(a[0]-a[2],a[1]); ctx.lineTo(a[0]+a[2],a[1]); ctx.moveTo(a[0],a[1]-a[2]); ctx.lineTo(a[0],a[1]+a[2]); ctx.stroke(); }
+    }
+    if(expr==='crazy'){
+      ctx.strokeStyle='#ff3b30'; ctx.lineWidth=Math.max(1.6,w*0.018); ctx.lineCap='round';
+      var rk=[[cx-w*0.22,h*0.07,w*0.032],[cx+w*0.22,h*0.06,w*0.028],[cx+w*0.02,h*-0.02,w*0.024]];
+      for(var q3=0;q3<rk.length;q3++){ var d=rk[q3]; ctx.beginPath(); ctx.moveTo(d[0]-d[2],d[1]); ctx.lineTo(d[0]+d[2],d[1]); ctx.moveTo(d[0],d[1]-d[2]); ctx.lineTo(d[0],d[1]+d[2]); ctx.stroke(); }
     }
 
     // ===== 액세서리 =====
@@ -508,6 +537,22 @@
       for(var q2=0;q2<sp.length;q2++){ var b=sp[q2]; ctx.beginPath(); ctx.moveTo(b[0]-b[2],b[1]); ctx.lineTo(b[0]+b[2],b[1]); ctx.moveTo(b[0],b[1]-b[2]); ctx.lineTo(b[0],b[1]+b[2]); ctx.stroke(); }
     }
 
+    ctx.restore();
+  }
+  function drawSpeech(lines){
+    var cx=player.x+player.w/2;
+    ctx.save();
+    ctx.font='700 13px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    var pad=9, lh=17, maxw=0;
+    for(var i=0;i<lines.length;i++){ maxw=Math.max(maxw, ctx.measureText(lines[i]).width); }
+    var bw=maxw+pad*2, bh=lines.length*lh+pad*2;
+    var by=player.y-16-bh, bx=Math.max(6, Math.min(W-bw-6, cx-bw/2));
+    ctx.fillStyle='rgba(255,255,255,0.97)'; ctx.strokeStyle='rgba(0,0,0,0.28)'; ctx.lineWidth=1.5;
+    roundRect(bx,by,bw,bh,9); ctx.fill(); ctx.stroke();
+    var tx=Math.max(bx+12, Math.min(bx+bw-12, cx));
+    ctx.fillStyle='rgba(255,255,255,0.97)'; ctx.beginPath(); ctx.moveTo(tx-7,by+bh-1); ctx.lineTo(tx+7,by+bh-1); ctx.lineTo(tx,by+bh+10); ctx.closePath(); ctx.fill();
+    ctx.fillStyle='#c0392b';
+    for(var j=0;j<lines.length;j++){ ctx.fillText(lines[j], bx+bw/2, by+pad+lh/2+j*lh); }
     ctx.restore();
   }
 
@@ -545,6 +590,7 @@
     for(var gy=80; gy<H; gy+=48){ ctx.beginPath(); ctx.moveTo(0,gy); ctx.lineTo(W,gy); ctx.stroke(); }
     for(var i=0;i<candles.length;i++){ if(candles[i].news) drawNews(candles[i]); else drawCandle(candles[i]); }
     if(state==='play' && player) drawPlayer();
+    if(state==='play' && player && crashTimer>0) drawSpeech(['잘못했어요.','한번만 살려주세요 ㅜㅜ']);
     for(var f=0;f<floatTexts.length;f++){
       var ft=floatTexts[f];
       var sz = ft.base + (1-ft.life)*ft.base*0.45;
@@ -565,7 +611,7 @@
       ctx.fillStyle='rgba(126,231,135,0.96)'; ctx.textAlign='center';
       ctx.font='900 30px sans-serif';
       ctx.shadowColor='#0d1117'; ctx.shadowBlur=8;
-      ctx.fillText('🔥 불장 타임 '+bullTimer.toFixed(1)+'s 🔥', W/2, Math.round(H*0.5));
+      ctx.fillText(bullLabel+' '+bullTimer.toFixed(1)+'s', W/2, Math.round(H*0.5));
       ctx.shadowBlur=0;
     }
     if(newsTimer>0 && bullTimer<=0 && crashTimer<=0){
@@ -650,12 +696,22 @@
       if(c.special==='limitup') continue;   // 상한가는 유지
       c.special=null; c.isUp=true;          // 하한가·일반 -> 초록 양봉
     }
-    flash=1.3; bullTimer=5; shake=Math.max(shake,16); sfx('bull');
+    flash=1.3; bullTimer=4; shake=Math.max(shake,16); sfx('bull');
     newsTimer=0; newsType=null; crashTimer=0;
-    bullStep=0;                                  // 불장 전용 경쾌 BGM 처음부터
+    bullStep=0; bullLabel='🔥 불장 타임';                                  // 불장 전용 경쾌 BGM 처음부터
     spawnSpecialAt('limitup', -20);              // 불장 확정 상한가 2개
     spawnSpecialAt('limitup', -320);
     showEvent('🚀 가즈아! 🚀');
+  }
+  function zzinban(){
+    // 폭락장을 뒤집는 대반등! (폭락장 반대 효과)
+    for(var i=0;i<candles.length;i++){ var c=candles[i]; if(c.dead) continue; if(c.special==='limitup') continue; c.special=null; c.isUp=true; }
+    crashTimer=0; crashHits=0; newsTimer=0; newsType=null;
+    flash=1.6; bullTimer=2; shake=Math.max(shake,18); bullStep=0; bullLabel='💥 찐반!!!';
+    sfx('bull');
+    spawnSpecialAt('limitup',-20); spawnSpecialAt('limitup',-300); spawnSpecialAt('limitup',-580);  // 반등 상한가 3연발
+    setEmo('wow',1.3);
+    showEvent('💥 찐반!!! 💥', '#f7c948');
   }
   function spawnNews(){
     sfx('newspop');
@@ -691,51 +747,61 @@
     newsHeadlineEl.classList.remove('show'); void newsHeadlineEl.offsetWidth; newsHeadlineEl.classList.add('show');
   }
   function startCrash(){
-    crashTimer=5.5; flashR=1.2; shake=Math.max(shake,20); sfx('crash');
+    crashTimer=5; flashR=1.2; shake=Math.max(shake,20); sfx('crash'); crashHits=0;
     setEmo('shock',1.5);
     spawnSpecialAt('limitdown',-20); spawnSpecialAt('limitdown',-260);
-    showEvent('📉 폭락장!', '#f85149');
+    showEvent('📉 폭락! 돔황챠', '#f85149');
   }
   function drawNews(c){
     var nw=c.w, nh=c.h, mx=c.x+nw/2, my=c.y+nh/2, t=Date.now();
-    var aura='150,90,230', hdr='#1b1f27';
+    var GOLD='250,204,21';          // 눈에 띄는 골드 글로우
     ctx.save();
-    ctx.translate(mx,my); ctx.rotate(Math.sin(t/300)*0.12);
-    // 종류별 오라 (맥동) - 떡상 초록 / 떡락 빨강
-    ctx.shadowColor='rgba('+aura+',0.95)'; ctx.shadowBlur=14+9*Math.sin(t/170);
-    ctx.fillStyle='#ece7da'; roundRect(-nw/2,-nh/2,nw,nh,3); ctx.fill();
+    ctx.translate(mx,my); ctx.rotate(Math.sin(t/340)*0.10);
+    // 골드 글로우
+    ctx.shadowColor='rgba('+GOLD+',0.95)'; ctx.shadowBlur=16+9*Math.sin(t/180); ctx.shadowOffsetY=0;
+    // 크림색 종이
+    ctx.fillStyle='#f7f2e8'; roundRect(-nw/2,-nh/2,nw,nh,4); ctx.fill();
     ctx.shadowBlur=0;
-    // 헤더 (종류색)
-    ctx.fillStyle=hdr; roundRect(-nw/2+3,-nh/2+3,nw-6,nh*0.30,1); ctx.fill();
-    ctx.fillStyle='#fff'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.font='900 '+(nh*0.2)+'px sans-serif';
-    ctx.fillText('NEWS', 0, -nh/2+nh*0.18);
-    ctx.strokeStyle='rgba(60,60,70,.4)'; ctx.lineWidth=1;
-    for(var li=0;li<3;li++){ var ly=-nh/2+nh*(0.52+li*0.16); ctx.beginPath(); ctx.moveTo(-nw/2+5,ly); ctx.lineTo(nw/2-5,ly); ctx.stroke(); }
-    // 커다란 물음표 워터마크 (맥동, 종류색)
-    ctx.fillStyle='rgba('+aura+','+(0.35+0.35*Math.sin(t/150))+')'; ctx.textBaseline='middle'; ctx.font='900 '+(nh*0.6)+'px serif';
-    ctx.fillText('?', 0, nh*0.08);
+    // 골드 테두리
+    ctx.strokeStyle='rgba('+GOLD+',0.95)'; ctx.lineWidth=Math.max(2,nw*0.045); roundRect(-nw/2,-nh/2,nw,nh,4); ctx.stroke();
+    // 마스트헤드 (검정 바 + 큼직한 흰 NEWS)
+    var hh=nh*0.34, mtop=-nh/2+nw*0.05;
+    ctx.fillStyle='#15171c'; roundRect(-nw/2+nw*0.05, mtop, nw-nw*0.10, hh, 2); ctx.fill();
+    ctx.fillStyle='#fff'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.font='900 '+(hh*0.74)+'px Arial, sans-serif';
+    ctx.fillText('NEWS', 0, mtop+hh/2+nh*0.01);
+    // 본문: 크고 강조된 빨강 물음표 (맥동 + 외곽선 + 글로우)
+    var qy = mtop+hh + (nh/2 - (mtop+hh))*0.52;
+    var pulse = 1 + 0.06*Math.sin(t/160);
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.font='900 '+(nh*0.62*pulse)+'px Georgia, serif';
+    ctx.shadowColor='rgba(220,40,30,0.9)'; ctx.shadowBlur=10+5*Math.sin(t/160);
+    ctx.lineWidth=Math.max(2,nh*0.03); ctx.strokeStyle='#fff'; ctx.strokeText('?', 0, qy);   // 흰 외곽선
+    ctx.shadowBlur=0;
+    ctx.fillStyle='#e11d16'; ctx.fillText('?', 0, qy);
     ctx.restore();
-    // 떠다니는 작은 물음표
+    // 주변을 떠다니는 작은 물음표(골드)
     ctx.save(); ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillStyle='rgba('+aura+','+(0.5+0.4*Math.sin(t/140))+')'; ctx.font='900 '+(nh*0.32)+'px serif';
-    ctx.fillText('?', mx-nw*0.52, my-nh*0.42+Math.sin(t/200)*3);
-    ctx.fillStyle='rgba('+aura+','+(0.5+0.4*Math.cos(t/160))+')'; ctx.font='900 '+(nh*0.26)+'px serif';
-    ctx.fillText('?', mx+nw*0.56, my-nh*0.05+Math.cos(t/220)*3);
+    ctx.shadowColor='rgba('+GOLD+',0.85)'; ctx.shadowBlur=6;
+    ctx.fillStyle='rgba('+GOLD+','+(0.8+0.2*Math.sin(t/140))+')'; ctx.font='900 '+(nh*0.34)+'px Georgia, serif';
+    ctx.fillText('?', mx-nw*0.58, my-nh*0.40+Math.sin(t/200)*3);
+    ctx.fillStyle='rgba('+GOLD+','+(0.8+0.2*Math.cos(t/160))+')'; ctx.font='900 '+(nh*0.28)+'px Georgia, serif';
+    ctx.fillText('?', mx+nw*0.60, my+Math.cos(t/220)*3);
     ctx.restore();
   }
   function titleFor(m){
     if(m<=0)             return '🥫 깡통 개미';
-    if(m>=15000000000)   return '🌌 은하계 투자왕';   // 150억+
-    if(m>=8000000000)    return '🎩 워런 버핏 환생';   // 80억+
-    if(m>=4300000000)    return '🌕 투 더 문';         // 43억+
-    if(m>=2300000000)    return '🔥 불장의 지배자';     // 23억+
-    if(m>=1200000000)    return '🖨️ 돈 복사기';        // 12억+
-    if(m>=650000000)     return '🐂 황소 라이더';       // 6.5억+
-    if(m>=350000000)     return '🕶️ 세력인가요?';       // 3.5억+
-    if(m>=180000000)     return '💥 계좌 폭주';        // 1.8억+
-    if(m>=95000000)      return '🚀 로켓 시동';        // 9500만+
-    if(m>=50000000)      return '📈 슬슬 떡상';        // 5000만+
-    if(m>=20000000)      return '🐜 개미';            // 2000만~5000만 (시작)
+    if(m>=50000000000)   return '🌌 은하계 투자왕';   // 500억+
+    if(m>=25000000000)   return '🎩 워렌 버핏?';       // 250억+
+    if(m>=13000000000)   return '🌕 투 더 문';         // 130억+
+    if(m>=6500000000)    return '🔥 불장의 지배자';     // 65억+
+    if(m>=3300000000)    return '🖨️ 돈 복사기';        // 33억+
+    if(m>=1600000000)    return '🐂 황소 라이더';       // 16억+
+    if(m>=800000000)     return '🕶️ 세력인가요?';       // 8억+
+    if(m>=400000000)     return '💥 계좌 폭주';        // 4억+
+    if(m>=180000000)     return '🚀 로켓 시동';        // 1.8억+
+    if(m>=80000000)      return '📈 슬슬 떡상';        // 8000만+
+    if(m>=20000000)      return '🐜 개미';            // 2000만~8000만 (시작)
     if(m>=10000000)      return '🙏 존버 중';          // 1000만~2000만
     return '😱 물렸네 물렸어';                          // 0원 초과~1000만
   }
@@ -749,11 +815,12 @@
   var FAKE_NAMES=['존버는승리','한강뷰예약자','불개미양성소','매수의신','물타기장인','영끌풀매수','따상가즈아','계좌인공호흡','우량주무새','손절엔소질무','반포자이꿈나무','시드머니사수','떡상기원1일차','곰탈출개미','국장탈출각','존버9년차','마통까지영끌','치킨값버는중','상한가맛집','내일부터부자'];
   var FAKE_LB=(function(){
     var pool=FAKE_NAMES.slice(); for(var k=pool.length-1;k>0;k--){ var j=Math.floor(Math.random()*(k+1)); var t=pool[k]; pool[k]=pool[j]; pool[j]=t; }
-    var TOP=1.4e10, BOT=1.5e7, N=pool.length, arr=[];   // 140억 ~ 1500만 로그 분포(등급 전반)
+    var TOP=5.0e10, BOT=1.5e7, N=pool.length, arr=[];   // 500억 ~ 1500만 로그 분포(등급 전반)
     for(var i=0;i<N;i++){
       var f=i/(N-1);
-      var sc=TOP*Math.pow(BOT/TOP, f)*(0.85+Math.random()*0.3);
-      sc=Math.round(sc/1000000)*1000000;
+      var sc=TOP*Math.pow(BOT/TOP, f)*(0.82+Math.random()*0.36);
+      sc=Math.round(sc/10000)*10000 - Math.floor(Math.random()*9973);   // 만원 단위 + 자잘한 끝자리(진짜처럼)
+      if(sc<1) sc=Math.floor(1000000+Math.random()*5000000);
       var cb=8+Math.round((1-f)*50)+Math.floor(Math.random()*8);   // 점수 높을수록 콤보↑
       arr.push({ name:pool[i], score:sc, combo:cb, fake:true });
     }
