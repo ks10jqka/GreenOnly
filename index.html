@@ -98,6 +98,7 @@
     </div>
     <input id="nameInput" type="text" maxlength="10" placeholder="닉네임 입력" autocomplete="off">
     <p style="font-size:13px;margin:6px 0 4px">조작방법 : 방향키 or 마우스 드래그</p>
+    <p style="font-size:13px;margin:2px 0 4px;color:#f7c948;font-weight:700">🔊 사운드 켜고 가즈아!</p>
     <button class="btn" id="startBtn">가즈아!!</button>
     <div style="font-size:13px;font-weight:800;color:#f7c948;margin-top:16px;">🏆 TOP PLAYERS</div>
     <div class="lbTabs" data-target="lbListStart">
@@ -165,7 +166,8 @@
     if(level===11) name = '초장대음봉';
     if(level===12) name = '나락음봉';
     var width = isUp ? (36 - level*2) : (28 + level*2);
-    return { value:VALUES[level-1]*10000, name:name, bodyH:s.b, up:s.u, low:s.l, width:width };
+    var val=Math.round(VALUES[level-1]*(1+difficulty()*0.8))*10000;   // 시간 지날수록 증가액 상승(최대 약 1.8배)
+    return { value:val, name:name, bodyH:s.b, up:s.u, low:s.l, width:width };
   }
 
   var state='start', money=START_MONEY, displayMoney=START_MONEY, timeLeft=GAME_TIME;
@@ -291,7 +293,7 @@
       if(overlap){
         c.dead=true;
         if(c.special==='limitup'){
-          var gu=Math.round(money*0.3); money+=gu; combo++; if(combo>maxCombo)maxCombo=combo; hansangCount++; if(combo===20 && bullArmed){ bullArmed=false; bullMarket(); }
+          var gu=Math.round(money*0.3); money+=gu; combo++; if(combo>maxCombo)maxCombo=combo; hansangCount++; if(combo===30 && bullArmed && bullTimer<=0){ bullArmed=false; bullMarket(); }
           addFloat('상한가 +'+fmtMan(gu), c.x+cw/2, player.y, '#3fb950', 14);
           pulseMoney(1, 13); showCombo(combo); setEmo('wow',0.9); sfx('limitup');
         } else if(c.special==='limitdown'){
@@ -301,7 +303,7 @@
           if(money<=0){ money=0; updateHUD(); endGame(); return; }
           if(crashTimer>0){ crashHits++; if(crashHits>=2) zzinban(); }   // 폭락장 중 하한가 2방 -> 찐반!!!
         } else if(c.isUp){
-          money += c.spec.value; combo++; if(combo>maxCombo)maxCombo=combo; if(combo===20 && bullArmed){ bullArmed=false; bullMarket(); }
+          money += c.spec.value; combo++; if(combo>maxCombo)maxCombo=combo; if(combo===30 && bullArmed && bullTimer<=0){ bullArmed=false; bullMarket(); }
           if(c.level>=9) hansangCount++;
           addFloat('+'+fmtMan(c.spec.value), c.x+cw/2, player.y, UP_COLOR, c.level);
           pulseMoney(1, c.level); setEmo('happy',0.35); sfx('up',combo);
@@ -707,6 +709,7 @@
     // 폭락장을 뒤집는 대반등! (폭락장 반대 효과)
     for(var i=0;i<candles.length;i++){ var c=candles[i]; if(c.dead) continue; if(c.special==='limitup') continue; c.special=null; c.isUp=true; }
     crashTimer=0; crashHits=0; newsTimer=0; newsType=null;
+    combo=0; bullArmed=false;   // 찐반 중 양봉으로는 불장 발동 안 함(음봉 맞아야 재무장)
     flash=1.6; bullTimer=2; shake=Math.max(shake,18); bullStep=0; bullLabel='💥 찐반!!!';
     sfx('bull');
     spawnSpecialAt('limitup',-20); spawnSpecialAt('limitup',-300); spawnSpecialAt('limitup',-580);  // 반등 상한가 3연발
