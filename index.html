@@ -98,7 +98,6 @@
     </div>
     <input id="nameInput" type="text" maxlength="10" placeholder="닉네임 입력" autocomplete="off">
     <p style="font-size:13px;margin:6px 0 4px">조작방법 : 방향키 or 마우스 드래그</p>
-    <p style="font-size:13px;margin:2px 0 4px;color:#f7c948;font-weight:700">🔊 사운드 켜고 가즈아!</p>
     <button class="btn" id="startBtn">가즈아!!</button>
     <div style="font-size:13px;font-weight:800;color:#f7c948;margin-top:16px;">🏆 TOP PLAYERS</div>
     <div class="lbTabs" data-target="lbListStart">
@@ -135,7 +134,7 @@
     W = r.width || 360; H = r.height || 640;
     cv.width = W*DPR; cv.height = H*DPR;
     ctx.setTransform(DPR,0,0,DPR,0,0);
-    if(player){ player.w=Math.max(44,W*0.12); player.h=player.w*1.5; player.y=H-player.h-Math.max(64,H*0.11); }
+    if(player){ player.w=Math.max(41,W*0.11); player.h=player.w*1.5; player.y=H-player.h-Math.max(64,H*0.11); }
   }
 
   var START_MONEY = 30000000;
@@ -179,7 +178,7 @@
   var player=null, targetX=null;
   var keys={left:false,right:false};
   var moveSpd=0;
-  var crashHits=0, bullLabel='🔥 불장 타임', downStreak=0;
+  var crashHits=0, bullLabel='🔥 불장 타임', downStreak=0, prevLv=0, transformT=0;
   var AC=null, muted=false;
   var bgmStep=0, bullStep=0, bgmT=0, bgmTimer=null, master=null;
   var moneyEl=null, moneyNumEl=null, pulseTimer=null, colorTimer=null;
@@ -195,11 +194,11 @@
   function resetGame(){
     money=START_MONEY; displayMoney=START_MONEY; timeLeft=GAME_TIME;
     candles=[]; floatTexts=[]; spawnTimer=0;
-    combo=0; maxCombo=0; hansangCount=0; shake=0; flash=0; bullTimer=0; bullArmed=true; bullStep=0; emo=null; emoTimer=0; newsTimer=0; newsType=null; targetX=null; moveSpd=0; crashHits=0; bullLabel='🔥 불장 타임'; downStreak=0;
+    combo=0; maxCombo=0; hansangCount=0; shake=0; flash=0; bullTimer=0; bullArmed=true; bullStep=0; emo=null; emoTimer=0; newsTimer=0; newsType=null; targetX=null; moveSpd=0; crashHits=0; bullLabel='🔥 불장 타임'; downStreak=0; prevLv=playerLevel(START_MONEY); transformT=0;
     newsQueue=(function(){ var n=3+Math.floor(Math.random()*3), arr=[], st=7, en=92, sp=(en-st)/n; for(var i=0;i<n;i++) arr.push(st+i*sp+Math.random()*sp*0.7); return arr; })();
     newsBag={ boom:shuffle(BOOM_NEWS.slice()), fake:shuffle(FAKE_NEWS.slice()) };
     crashTimer=0; flashR=0; crashQueue=(function(){ var n=2+Math.floor(Math.random()*2), arr=[], st=30, en=90, sp=(en-st)/n; for(var i=0;i<n;i++) arr.push(st+i*sp+Math.random()*sp*0.6); return arr; })();
-    player={ w:Math.max(44,W*0.12), h:0, x:0, y:0 };
+    player={ w:Math.max(41,W*0.11), h:0, x:0, y:0 };
     player.h=player.w*1.5;
     player.x=W/2-player.w/2;
     player.y=H-player.h-Math.max(64,H*0.11);
@@ -228,6 +227,7 @@
   window.addEventListener('keyup', function(e){ if(e.key==='ArrowLeft')keys.left=false; if(e.key==='ArrowRight')keys.right=false; });
   window.addEventListener('resize', resize);
 
+  function playerLevel(m){ return m>=8e9?7 : m>=2e9?6 : m>=8e8?5 : m>=4e8?4 : m>=2e8?3 : m>=1e8?2 : m>=5e7?1 : 0; }
   function difficulty(){ return 1 - (timeLeft/GAME_TIME); }
 
   function spawnCandle(){
@@ -338,6 +338,10 @@
     if(newsTimer>0){ newsTimer-=dt; if(newsTimer<=0) newsType=null; }
     if(crashTimer>0) crashTimer=Math.max(0, crashTimer-dt);
     if(flashR>0) flashR=Math.max(0, flashR-dt*1.6);
+    if(transformT>0) transformT=Math.max(0, transformT-dt*1.4);
+    var _clv=playerLevel(money);
+    if(_clv>prevLv){ transformT=1; sfx('levelup'); }
+    prevLv=_clv;
     if(newsQueue.length && (GAME_TIME-timeLeft)>=newsQueue[0] && newsTimer<=0 && bullTimer<=0 && crashTimer<=0){ newsQueue.shift(); spawnNews(); }
     if(crashQueue.length && (GAME_TIME-timeLeft)>=crashQueue[0] && crashTimer<=0 && bullTimer<=0 && newsTimer<=0){ crashQueue.shift(); startCrash(); }
   }
@@ -349,7 +353,7 @@
     ctx.save(); ctx.translate(x, y+bob);
 
     var m=money;
-    var lv = m>=8e9?7 : m>=2e9?6 : m>=8e8?5 : m>=4e8?4 : m>=2e8?3 : m>=1e8?2 : m>=5e7?1 : 0;
+    var lv = playerLevel(m);
     var L=[
       {sk:'z',top:'tee',  tc:['#3f5f72','#2a4150'], pc:'jean', pj:['#3a4d63','#26384a'], ragged:true, hair:'z'},
       {sk:'n',top:'tee',  tc:['#8a94a3','#6f7885'], pc:'jean', pj:['#3f5f8a','#2c4869'], hair:'b'},
@@ -599,6 +603,15 @@
     for(var gy=80; gy<H; gy+=48){ ctx.beginPath(); ctx.moveTo(0,gy); ctx.lineTo(W,gy); ctx.stroke(); }
     for(var i=0;i<candles.length;i++){ if(candles[i].news) drawNews(candles[i]); else drawCandle(candles[i]); }
     if(state==='play' && player) drawPlayer();
+    if(state==='play' && player && transformT>0){
+      var tpr=1-transformT, tcx=player.x+player.w/2, tcy=player.y+player.h*0.5;
+      ctx.save(); ctx.globalAlpha=transformT;
+      ctx.strokeStyle='#ffe14d'; ctx.lineWidth=3.5; ctx.shadowColor='#ffd23f'; ctx.shadowBlur=16;
+      ctx.beginPath(); ctx.arc(tcx,tcy, player.w*0.42+tpr*player.w*0.95, 0,7); ctx.stroke();
+      ctx.shadowBlur=0; ctx.fillStyle='#fff';
+      for(var skk=0;skk<10;skk++){ var aa=skk/10*6.283+tpr*2.2, rr=player.w*0.5+tpr*player.w*0.85; var ssx=tcx+Math.cos(aa)*rr, ssy=tcy+Math.sin(aa)*rr*0.95; ctx.beginPath(); ctx.arc(ssx,ssy, 2.4*transformT+0.8, 0,7); ctx.fill(); }
+      ctx.restore();
+    }
     if(state==='play' && player && crashTimer>0) drawSpeech(['잘못했어요.','한번만 살려주세요 ㅜㅜ']);
     for(var f=0;f<floatTexts.length;f++){
       var ft=floatTexts[f];
@@ -929,6 +942,7 @@
     else if(kind==='bull'){ [392,523,659,784,1047].forEach(function(f,i){ tone(f,0.16,'triangle',0.2,i*0.07); }); }
     else if(kind==='crash'){ tone(320,0.7,'sawtooth',0.22,0,60); tone(95,0.7,'square',0.12); }
     else if(kind==='news'){ tone(880,0.08,'sine',0.16); tone(1175,0.1,'sine',0.16,0.08); }
+    else if(kind==='levelup'){ [784,988,1319,1568].forEach(function(f,i){ tone(f,0.12,'triangle',0.16,i*0.05); }); }
     else if(kind==='newspop'){ tone(1319,0.09,'sine',0.13,0,988); tone(988,0.12,'triangle',0.1,0.09,1319); }
     else if(kind==='newsboom'){ [659,880,1047,1319].forEach(function(f,i){ tone(f,0.13,'square',0.17,i*0.06); }); }
     else if(kind==='newsfake'){ [523,392,294,175].forEach(function(f,i){ tone(f,0.16,'sawtooth',0.17,i*0.06); }); }
